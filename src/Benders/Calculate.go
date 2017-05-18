@@ -41,7 +41,7 @@ func Sub(Array []byte, Value int) ([]byte){
 
 
 func Not(Shellcode []byte) ([]byte){
-	for i := 0; i < (len(Shellcode)-1); i++ {
+	for i := 0; i < (len(Shellcode)); i++ {
 		Shellcode[i] = ^Shellcode[i]
 	}
 	return Shellcode
