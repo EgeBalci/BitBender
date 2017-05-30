@@ -1,6 +1,12 @@
 # BitBender
 BitBender is a byte manipulation tool
 
+# INSTALL
+		export GOPATH=$(pwd)
+		go get github.com/fatih/color
+		go build BitBender.go
+
+
 
 
 		USAGE: 
