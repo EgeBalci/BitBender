@@ -2,7 +2,9 @@
 BitBender is a byte manipulation tool
 
 # INSTALL
-	make
+	git clone https://github.com/egebalci/BitBender.git
+	cd BitBender/lib && export GOPATH=$(pwd)
+	cd ../src && go build -o ../bib
 
 # USAGE
 	# BitBender 
