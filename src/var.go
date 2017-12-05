@@ -1,4 +1,4 @@
-package Benders
+package main
 
 import "github.com/fatih/color"
 
@@ -23,28 +23,22 @@ type Parameters struct {
 }
 
 
-var BANNER string = `
-__________.__  __ __________                   .___            
-\______   \__|/  |\______   \ ____   ____    __| _/___________ 
- |    |  _/  \   __\    |  _// __ \ /    \  / __ |/ __ \_  __ \
- |    |   \  ||  | |    |   \  ___/|   |  \/ /_/ \  ___/|  | \/
- |______  /__||__| |______  /\___  >___|  /\____ |\___  >__|   
-        \/                \/     \/     \/      \/    \/       
-
-`
-
 var HELP string =`
+# BitBender 
+> Author: Ege Balcı
+> Source: github.com/egebalci/BitBender
+
 USAGE: 
-	BitBender [options] <file> 
+	bib [options] <file> 
 OPTIONS:
   	^	<KeySize>		Make XOR operation with a randomly generated key (Max:~/Min:1)
 	^=	<Key>			Make a XOR operation with given key 
 	+	<IncrementValue>  	Increment each byte of the file with given value (Max:255/Min:1)
 	-	<DecrementValue>	Decrement each byte of the file with given value (Max:255/Min:1)
-	!		-		Make a logical NOT operation to each byte of the file
+	!		 		Make a logical NOT operation to each byte of the file
 	ror	<RotationValue>		Rotate eache byte of the file to right with given value
 	rol	<RotationValue>		Rotate eache byte of the file to left with given value
-	= 		-		Calculate the checksum of the given file 
+	= 		 		Calculate the checksum of the given file 
 	-h, 	--help 			Print this message 					
 EXAMPLE:
 	BitBender ^ 12 file

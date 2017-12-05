@@ -1,7 +1,10 @@
-package Benders
+package main
 
 import "math/rand"
 import "time"
+import "fmt"
+import "os"
+
 
 
 
@@ -11,7 +14,6 @@ func Xor(Data []byte, Key []byte) ([]byte){
 	}
 	return Data
 }
-
 
 func GenerateKey(Size int) ([]byte){
 	Key := make([]byte, Size)
@@ -38,8 +40,6 @@ func Sub(Array []byte, Value int) ([]byte){
   return Array
 }
 
-
-
 func Not(Shellcode []byte) ([]byte){
 	for i := 0; i < (len(Shellcode)); i++ {
 		Shellcode[i] = ^Shellcode[i]
@@ -55,8 +55,6 @@ func Ror(File []byte, Val uint) ([]byte){
 
   return File 
 }
-
-
 
 func Rol(File []byte, Val uint) ([]byte){
 
@@ -78,6 +76,14 @@ func Checksum(File []byte) (int64){
 		return 0
 	}
 
-
 	return Checksum
+}
+
+func ParseError(err error,msg string) {
+	if err != nil {
+		
+		fmt.Println("\n")
+		BoldRed.Println("\n[-] ERROR: "+msg+"\n")
+		os.Exit(1)
+	}
 }
