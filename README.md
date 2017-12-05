@@ -2,7 +2,7 @@
 BitBender is a byte manipulation tool
 
 # INSTALL
-		make
+	make
 
 # USAGE
 	# BitBender 
