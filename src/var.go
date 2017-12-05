@@ -46,6 +46,4 @@ EXAMPLE:
 	BitBender + 4 file
 	BitBender - 5 file
 	BitBender ! file
-
-
 `
