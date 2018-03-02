@@ -1,197 +1,105 @@
 package main
 
 import "io/ioutil"
-import "os/exec"
 import "strconv"
+import "flag"
 import "fmt"
 import "os"
 
-var P Parameters
+var ARGS []string
+var PAR Parameters
 
 func main() {
 
-	ARGS := os.Args[1:]
+	ARGS = os.Args[1:]
+	if len(ARGS) < 1 {
+		fmt.Println(HELP)
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
 
-  if len(ARGS) <= 1 || (ARGS[0] == "--help" || ARGS[0] == "-h"){
-    fmt.Println(HELP)
-    os.Exit(0)
-  }
-  
-  for i := 0; i < len(ARGS); i++ {
+	PAR.RC4 = flag.Bool("rc4", false, "Cipher with RC4 algorithm.")
+	PAR.XOR = flag.Bool("xor", false, "Cipher with logical XOR operation.")
+	PAR.ROR = flag.Bool("rot", false, "Cipher with logical ROT operation.")
+	PAR.ROL = flag.Bool("rol", false, "Cipher with logical ROL operation.")
+	PAR.INC = flag.Bool("inc", false, "Cipher with logical INC operation.")
+	PAR.DEC = flag.Bool("dec", false, "Cipher with logical DEC operation.")
+	PAR.NOT = flag.Bool("not", false, "Cipher with logical NOT operation.")
+	PAR.CHK = flag.Bool("chk", false, "Calculate the checksum.")
+	PAR.KeySize = flag.Int("k", 1, "Size of the random key.")
+	PAR.key = flag.String("K", "", "Cipher key.")
 
-    if ARGS[i] == "^" {
-      P.Mode = "^"
-      Value, Err := strconv.Atoi(ARGS[i+1])
-      ParseError(Err,"Invalid XOR key size !")
-      P.KeySize = Value
-    }
-	  if ARGS[i] == "^=" {
-      P.Mode = "^="
-      P.Key = []byte(ARGS[i+1])
-    }
-    if ARGS[i] == "+" {
-      P.Mode = "+"
-      Value, Err := strconv.Atoi(ARGS[i+1])
-      ParseError(Err,"Invalid add value !")
-      P.Plus = Value 
-    }
-    if ARGS[i] == "-" {
-      P.Mode = "-"
-      Value, Err := strconv.Atoi(ARGS[i+1])
-      ParseError(Err,"Invalid subtract value !")
-      P.Minus = Value
-    }     
-    if ARGS[i] == "!" {
-      P.Mode = "!"
-    }
-    if ARGS[i] == "ror" || ARGS[i] == "--ror" {
-      P.Mode = "ror"
-      Value, Err := strconv.Atoi(ARGS[i+1])
-      ParseError(Err,"Invalid retation value !")
-      P.RotValue = uint(Value)
-    }
-    if ARGS[i] == "rol" || ARGS[i] == "--rol" {
-      P.Mode = "rol"
-      Value, Err := strconv.Atoi(ARGS[i+1])
-      ParseError(Err,"Invalid rotation value !")
-      P.RotValue = uint(Value)
-    }
-    if ARGS[i] == "=" || ARGS[i] == "--checksum" {
-      P.Mode = "="
-    }
-  }
+	flag.Parse()
 
-  File, Err := ioutil.ReadFile(ARGS[len(ARGS)-1])
-  ParseError(Err,"Unable to open input file !")
+	file, err := ioutil.ReadFile(ARGS[len(ARGS)-1])
+	ParseError(err, "Unable to open input file !")
 
-  if P.Mode == "^" {
-    BoldYellow.Print("[*] Key Size: ")
-    BoldBlue.Println(P.KeySize)
-    BoldYellow.Println("[*] Generating XOR key...")
-    P.Key = GenerateKey(P.KeySize)
-    BoldYellow.Print("[*] Key (ASCII): ")
-    BoldBlue.Println(string(P.Key))
-    BoldYellow.Println("[*] Ciphering...")
-    _File := Xor(File,P.Key)
-    XoredFile,Err := os.Create(string(ARGS[len(ARGS)-1]+".xor"))
-    ParseError(Err,"Unable to create output file !")
-    BoldYellow.Println("[*] Writing output...")
-    XoredFile.Write(_File)
-    XoredFile.Close()
-    KeyFile,Err2 := os.Create(string(ARGS[len(ARGS)-1]+".key"))
-    ParseError(Err2,"Unable create key file !")
-    KeyFile.Write(P.Key)
-    KeyFile.Close()    
-    FileOut, Err3 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".xor")).Output()
-    ParseError(Err3,"Unable to retrieve file hex output !")
-    BoldGreen.Println(string(FileOut))
-    KeyOut, Err4 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".key")).Output()
-    ParseError(Err4,"Unable to retrieve key hex output !")
-    BoldBlue.Println(string(KeyOut))
-    os.Exit(0)
-  }else if P.Mode == "^=" {
-    BoldYellow.Print("[*] Key (ASCII): ")
-    BoldBlue.Println(string(P.Key))
-    BoldYellow.Println("[*] Ciphering...")
-    _File := Xor(File,P.Key)
-    XoredFile,Err := os.Create(string(ARGS[len(ARGS)-1]+".xor"))
-    ParseError(Err,"Unable to create output file !")
-    BoldYellow.Println("[*] Writing output...")
-    XoredFile.Write(_File)
-    XoredFile.Close()
-    KeyFile,Err2 := os.Create(string(ARGS[len(ARGS)-1]+".key"))
-    ParseError(Err2,"Unable create key file !")
-    KeyFile.Write(P.Key)
-    KeyFile.Close()
-    FileOut, Err3 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".xor")).Output()
-    ParseError(Err3,"Unable to retrieve file hex output !")
-    BoldGreen.Println(string(FileOut))
-    KeyOut, Err4 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".key")).Output()
-    ParseError(Err4,"Unable to retrieve key hex output !")
-    BoldBlue.Println(string(KeyOut))
-    os.Exit(0)
-  }else if P.Mode == "+" {
-    BoldYellow.Print("[*] Increment Value: ")
-    BoldBlue.Println(P.Plus)
-    BoldYellow.Println("[*] Incrementing bytes...")
-    _File := Add(File,P.Plus)
-    IncFile,Err := os.Create(string(ARGS[len(ARGS)-1]+".add"))
-    ParseError(Err,"Unable to create output file !")
-    BoldYellow.Println("[*] Writing output...")
-    IncFile.Write(_File)
-    IncFile.Close()
-    FileOut, Err2 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".add")).Output()
-    ParseError(Err2,"Unable to retrieve file hex output !")
-    BoldGreen.Println(string(FileOut))
-    os.Exit(0)
-  }else if P.Mode == "-" {
-    BoldYellow.Print("[*] Decrement Value: ")
-    BoldBlue.Println(P.Minus)
-    BoldYellow.Println("[*] Decrementing bytes...")
-    _File := Sub(File,P.Minus)
-    DecFile,Err := os.Create(string(ARGS[len(ARGS)-1]+".sub"))
-    ParseError(Err,"Unable to create output file !")    
-    BoldYellow.Println("[*] Writing output...")
-    DecFile.Write(_File)
-    DecFile.Close()
-    FileOut, Err2 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".sub")).Output()
-    ParseError(Err2,"Unable to retrieve file hex output !")
-    BoldGreen.Println(string(FileOut))
-    os.Exit(0)
-  }else if P.Mode == "!" {
-    BoldYellow.Println("[*] Reversing bytes...")
-    _File := Not(File)
-    NotFile,Err := os.Create(string(ARGS[len(ARGS)-1]+".not"))
-    ParseError(Err,"Unable to create output file !")
-    BoldYellow.Println("[*] Writing output...")
-    NotFile.Write(_File)
-    NotFile.Close()
-    FileOut, Err2 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".not")).Output()
-    ParseError(Err2,"Unable to retrieve file hex output !")
-    BoldGreen.Println(string(FileOut))
-    os.Exit(0)    
-  }else if P.Mode == "ror" {
-    BoldYellow.Print("[*] Rotation Value : ")
-    BoldBlue.Print(P.RotValue)
-    BoldBlue.Println(">>")
-    BoldYellow.Println("[*] Rotating bytes...")
-    _File := Ror(File,P.RotValue)
-    RorFile,Err := os.Create(string(ARGS[len(ARGS)-1]+".ror"))
-    ParseError(Err,"Unable to create output file !")
-    BoldYellow.Print("[*] Writing output...")
-    RorFile.Write(_File)
-    RorFile.Close()
-    FileOut, Err2 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".ror")).Output()
-    ParseError(Err2,"Unable to retrieve file hex output !")
-    BoldGreen.Println(string(FileOut))
-    os.Exit(0)    
-  }else if P.Mode == "rol" {
-    BoldYellow.Print("[*] Rotation Value : ")
-    BoldBlue.Print("<<")
-    BoldBlue.Println(P.RotValue)
-    BoldYellow.Println("[*] Rotating bytes...")
-    _File := Ror(File,P.RotValue)
-    RolFile,Err := os.Create(string(ARGS[len(ARGS)-1]+".rol"))
-    ParseError(Err,"Unable to create output file !")
-    BoldYellow.Print("[*] Writing output...")
-    RolFile.Write(_File)
-    RolFile.Close()
-    FileOut, Err2 := exec.Command("sh", "-c", string("xxd -i "+ARGS[len(ARGS)-1]+".rol")).Output()
-    ParseError(Err2,"Unable to retrieve file hex output !")
-    BoldGreen.Println(string(FileOut))
-    os.Exit(0)    
-  }else if P.Mode == "=" {
-    BoldYellow.Println("[*] Calculating checsum...")
-    var _Checksum int64 = Checksum(File)
-    BoldGreen.Print("[#] ")
-    BoldYellow.Print("Checksum : ")
-    BoldRed.Print("0x",strconv.FormatInt(_Checksum, 16),"\n")
-    os.Exit(0)   
-  }else{
-    BoldRed.Println("[-] ERROR : Invalid operation mode !")
-    os.Exit(1)
-  }
+	BoldYellow.Print("[*] Key Size: ")
+	if *PAR.key == "" {
+		BoldBlue.Println(*PAR.KeySize)
+	} else {
+		BoldBlue.Println(len(*PAR.key))
+		*PAR.KeySize = len(*PAR.key)
+	}
 
-
+	if *PAR.RC4 {
+		if *PAR.key == "" {
+			*PAR.key = string(GenerateKey(*PAR.KeySize))
+		}
+		out(RC4(file, []byte(*PAR.key)), ".rc4")
+		xxd(".rc4")
+		os.Exit(0)
+	} else if *PAR.XOR {
+		if *PAR.key == "" {
+			*PAR.key = string(GenerateKey(*PAR.KeySize))
+		}
+		out(xor(file, []byte(*PAR.key)), ".xor")
+		xxd(".xor")
+		os.Exit(0)
+	} else if *PAR.INC {
+		if *PAR.key == "" {
+			*PAR.key = string(GenerateKey(*PAR.KeySize))
+		}
+		out(inc(file, *PAR.KeySize), ".inc")
+		xxd(".inc")
+		os.Exit(0)
+	} else if *PAR.DEC {
+		if *PAR.key == "" {
+			*PAR.key = string(GenerateKey(*PAR.KeySize))
+		}
+		out(dec(file, *PAR.KeySize), ".dec")
+		xxd(".dec")
+		os.Exit(0)
+	} else if *PAR.ROR {
+		if *PAR.key == "" {
+			*PAR.key = string(GenerateKey(*PAR.KeySize))
+		}
+		out(ror(file, uint(*PAR.KeySize)), ".dec")
+		xxd(".dec")
+		os.Exit(0)
+	} else if *PAR.ROL {
+		if *PAR.key == "" {
+			*PAR.key = string(GenerateKey(*PAR.KeySize))
+		}
+		out(rol(file, uint(*PAR.KeySize)), ".rol")
+		xxd(".rol")
+		os.Exit(0)
+	} else if *PAR.NOT {
+		if *PAR.key == "" {
+			*PAR.key = string(GenerateKey(*PAR.KeySize))
+		}
+		out(not(file), ".not")
+		xxd(".not")
+		os.Exit(0)
+	} else if *PAR.CHK {
+		var checksum int64 = checksum(file)
+		BoldGreen.Print("[#] ")
+		BoldYellow.Print("Checksum : ")
+		BoldRed.Print("0x", strconv.FormatInt(checksum, 16), "\n")
+		os.Exit(0)
+	} else {
+		BoldRed.Println("[-] ERROR : Choose a valid operation mode !")
+		os.Exit(1)
+	}
 
 }
