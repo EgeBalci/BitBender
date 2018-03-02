@@ -2,6 +2,7 @@ package main
 
 import "io/ioutil"
 import "strconv"
+import "runtime"
 import "flag"
 import "fmt"
 import "os"
@@ -10,6 +11,8 @@ var ARGS []string
 var PAR Parameters
 
 func main() {
+
+	runtime.GOMAXPROCS(runtime.NumCPU()) // Run faster !
 
 	ARGS = os.Args[1:]
 	if len(ARGS) < 1 {
